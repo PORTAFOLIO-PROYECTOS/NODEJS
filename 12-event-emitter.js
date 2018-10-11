@@ -9,3 +9,5 @@ ee
 
 ee.emit('myevent', 'soy un emisor de eventos');
 ee.emit('myevent', 'volviendo a emitir');
+ee.removeAllListeners('myevent'); // para eliminar eventos
+ee.emit('myevent', 'volviendo a emitir por tercera vez');
