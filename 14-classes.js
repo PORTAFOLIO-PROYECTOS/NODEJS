@@ -1,5 +1,5 @@
 // herederas las carasteristicas a mi objetos del reloj
-// pasando a ES6
+// pasando el anterior código a ES6
 'use strict';
 
 class Clock {
