@@ -1,0 +1,27 @@
+Para instalar dependecia en dev usar: npm i -D pug
+Para instalar dependecia usar: npm i -S pug
+Para instalar de manera global usar: npm i -g http-server
+Para instalar varios paquetes: npm i -S animate.css wowjs responsimple font-awesome
+
+-----
+
+ para actualizar paquetes
+ npm update [package] --save / -D / -g
+
+----
+
+ para desintalar paquetes
+ uninstall [package] --save / -D / -g
+
+ ----
+
+ para publicar paquetes
+ npm publish /* tener un repo en github y cuenta en npm*/
+
+ ----
+
+ en el package, para poner por defecto una dependecia a ejecutar
+
+ "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "http-server"
