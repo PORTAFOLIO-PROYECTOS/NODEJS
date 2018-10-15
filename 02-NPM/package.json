@@ -2,7 +2,7 @@
   "name": "aprendiendo-npm",
   "version": "1.0.0",
   "description": "En este paquete aprenderemos a trabajar con NPM",
-  "main": "package.json",
+  "main": "gulpfile.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "http-server"
