@@ -5,5 +5,10 @@ html(lang="en")
         meta(name="viewport", content="width=device-width, initial-scale=1.0")
         meta(http-equiv="X-UA-Compatible", content="ie=edge")
         title title
+        each css in files.CSS
+            link(rel="stylesheet", href=`../${css}`)
     body
         h1=title
+
+        each js in files.JS
+            script(src=`../${js}`)
