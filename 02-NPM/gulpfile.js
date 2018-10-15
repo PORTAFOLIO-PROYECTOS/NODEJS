@@ -4,7 +4,7 @@ const gulp = require('gulp'),
     pug = require('gulp-pug'),
     sass = require('gulp-sass'),
     imagemin = require('gulp-imagemin'),
-    pngquant = require('imagenmin-pngquant'),
+    pngquant = require('imagemin-pngquant'),
     svgmin = require('gulp-svgmin'),
     webp = require('gulp-webp'),
     useref = require('gulp-useref'),
@@ -56,7 +56,7 @@ const gulp = require('gulp'),
 
 gulp.task('pug', () => {
     gulp
-        .src(`${dir.src}/pug/*.png`)
+        .src(`${dir.src}/pug/*.pug`)
         .pipe(pug(opts.pug))
         .pipe(gulp.dest(dir.dist));
 });

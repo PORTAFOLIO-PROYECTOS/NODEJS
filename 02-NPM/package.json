@@ -2,10 +2,9 @@
   "name": "aprendiendo-npm",
   "version": "1.0.0",
   "description": "En este paquete aprenderemos a trabajar con NPM",
-  "main": "gulpfile.js",
+  "main": "package.json",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "http-server"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Hugo Roca <hugo.rock20@hotmail.com>",
   "license": "MIT",
@@ -28,13 +27,13 @@
     "gulp-htmlmin": "^2.0.0",
     "gulp-imagemin": "^3.0.3",
     "gulp-pug": "^3.0.4",
-    "gulp-sass": "^2.3.2",
+    "gulp-sass": "^3.1.0",
     "gulp-svgmin": "^1.2.2",
     "gulp-uglify": "^2.0.0",
     "gulp-uncss": "^1.0.6",
     "gulp-useref": "^3.1.2",
     "gulp-webp": "^2.3.0",
-    "imagemin-pngquant": "^5.0.0",
+    "imagemin-pngquant": "^5.1.0",
     "onchange": "^3.0.0",
     "parallelshell": "^2.0.0"
   }
