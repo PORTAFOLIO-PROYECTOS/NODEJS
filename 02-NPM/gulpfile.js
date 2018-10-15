@@ -30,7 +30,7 @@ const gulp = require('gulp'),
         ],
         mCSS: 'estilos.min.css',
         JS: [
-            `${dir.nm}/jquery/dist/jqeurt.min.js`,
+            `${dir.nm}/jquery/dist/jquery.min.js`,
             `${dir.nm}/owl.carousel/dist/owl.carousel.min.js`,
             `${dir.nm}/wowjs/dist/wow.min.js`,
             `${dir.dist}/js/codigos.js`
@@ -46,12 +46,13 @@ const gulp = require('gulp'),
     },
     opts = {
         pug: {
-            pretty: true,
+            pretty: true, //False para minificar archivos
             locals: {
                 title: 'Maratón',
                 files: files
             }
-        }
+        },
+        sass: {outputStyle: 'compressed'}
     };
 
 gulp.task('pug', () => {
@@ -59,4 +60,11 @@ gulp.task('pug', () => {
         .src(`${dir.src}/pug/*.pug`)
         .pipe(pug(opts.pug))
         .pipe(gulp.dest(dir.dist));
+});
+
+gulp.task('sass', () => {
+    gulp
+        .src(`${dir.src}/scss/*.scss`)
+        .pipe(sass(opts.sass))
+        .pipe(gulp.dest(`${dir.dist}/css`));
 });
