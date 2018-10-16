@@ -3,6 +3,7 @@
 const gulp = require('gulp'),
     pug = require('gulp-pug'),
     sass = require('gulp-sass'),
+    babel = require('gulp-babel'),
     imagemin = require('gulp-imagemin'),
     pngquant = require('imagemin-pngquant'),
     svgmin = require('gulp-svgmin'),
@@ -52,7 +53,8 @@ const gulp = require('gulp'),
                 files: files
             }
         },
-        sass: {outputStyle: 'compressed'}
+        sass: {outputStyle: 'compressed'},
+        es6: {presets: ['es2015']}
     };
 
 gulp.task('pug', () => {
@@ -67,4 +69,11 @@ gulp.task('sass', () => {
         .src(`${dir.src}/scss/*.scss`)
         .pipe(sass(opts.sass))
         .pipe(gulp.dest(`${dir.dist}/css`));
+});
+
+gulp.task('es6', () => {
+    gulp
+        .src(`${dir.src}/es6/*.js`)
+        .pipe(babel(opts.es6))
+        .pipe(gulp.dest(`${dir.dist}/js`))
 });
