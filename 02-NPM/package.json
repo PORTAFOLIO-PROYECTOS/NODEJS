@@ -9,6 +9,7 @@
     "pug": "gulp pug",
     "sass": "gulp sass",
     "es6": "gulp es6",
+    "serve": "browser-sync start --server --startPath \"dist\" --files \"dist/**/*.+(html|css|js)\"",
     "build:dev": "npm run pug && npm run sass && npm run es6"
   },
   "author": "Hugo Roca <hugo.rock20@hotmail.com>",
