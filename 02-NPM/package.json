@@ -18,7 +18,8 @@
     "img": "gulp img",
     "svg": "gulp svg",
     "webp": "gulp webp",
-    "resize": "mogrify -resize \"1024>\" ./dist/img/**/*.*"
+    "resize": "mogrify -resize \"1024>\" ./dist/img/*.*",
+    "build:media": "npm run img && npm run svg && npm run webp && npm run resize && npm run fonts && npm run statics"
   },
   "author": "Hugo Roca <hugo.rock20@hotmail.com>",
   "license": "MIT",

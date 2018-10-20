@@ -108,3 +108,15 @@ gulp.task('webp', () => {
         .pipe(webp())
         .pipe(gulp.dest(`${dir.dist}/img/webp`));
 });
+
+gulp.task('fonts', () => {
+	gulp
+		.src(files.fonts)
+		.pipe( gulp.dest(`${dir.dist}/fonts`) );
+});
+
+gulp.task('statics', () => {
+	gulp
+		.src(files.statics)
+		.pipe( gulp.dest(dir.dist) );
+});
