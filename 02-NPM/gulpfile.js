@@ -77,3 +77,10 @@ gulp.task('es6', () => {
         .pipe(babel(opts.es6))
         .pipe(gulp.dest(`${dir.dist}/js`))
 });
+
+gulp.task('img', () => {
+    gulp
+        .src(`${dir.src}/img/*.+(png|jpeg|jpg|gif)`)
+        .pipe(imagemin(opts.imagemin))
+        .pipe(gulp.dest(`${dir.dist}/img`))
+});
