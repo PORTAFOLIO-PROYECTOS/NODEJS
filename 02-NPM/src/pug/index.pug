@@ -1,4 +1,15 @@
-<!DOCTYPE html>
+//- Comentario JADE
+// Comentatio HTML
+//- Esto se conoce como interpolación ↓
+//- Creación de mixin (parecido funciones)
+mixin menu(url, name)
+    li #[a(href=`${url}`) #{name}]
+
+mixin pic(name, ext)
+    source(srcset=`img/webp/${name}.webp`, type="image/webp")
+    img(src=`img/${name}.${ext}`)
+
+doctype html
 html(lang="en")
     head
         meta(charset="UTF-8")
@@ -12,4 +23,14 @@ html(lang="en")
         header.container-full.header.center
             nav.container.nav
                 ul.item
-                    li #[a(href="/") Texto]
+                    +menu('#maraton', 'Maratón')
+                    +menu('#mito', 'Mito')
+                    +menu('#olimpico', 'Olímpico')
+                    li
+                        +pic('logo-maraton', 'png')
+                    +menu('#mayores','Mayores')
+                    +menu('#top-ten', 'Top Ten')
+                    +menu('#inspirate', "Inspírate")
+        
+        
+                    
