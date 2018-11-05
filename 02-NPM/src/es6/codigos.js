@@ -2,5 +2,5 @@
 
 $(() => {
     let nombre = 'Hugo';
-    alert(`Hola ${nombre}`);
+    //alert(`Hola ${nombre}`);
 })

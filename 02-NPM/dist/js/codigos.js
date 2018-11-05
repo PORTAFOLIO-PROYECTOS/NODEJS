@@ -2,5 +2,5 @@
 
 $(function () {
     var nombre = 'Hugo';
-    alert('Hola ' + nombre);
+    //alert(`Hola ${nombre}`);
 });
