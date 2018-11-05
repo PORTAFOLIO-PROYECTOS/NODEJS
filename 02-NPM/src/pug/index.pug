@@ -1,5 +1,4 @@
 //- Comentario JADE
-// Comentatio HTML
 //- Esto se conoce como interpolación ↓
 //- Creación de mixin (parecido funciones)
 mixin menu(url, name)
@@ -21,8 +20,10 @@ html(lang="en")
         meta(http-equiv="X-UA-Compatible", content="ie=edge")
         title= title
         link(rel="shortcut icon", href="img/favicon.ico", type="image/x-icon")
+        // build:css css/estilos.min.css
         each css in files.CSS
             link(rel="stylesheet", href=`../${css}`)
+        // end build:css
     body
         header.container-full.header.center
             nav.container.nav
@@ -116,6 +117,8 @@ html(lang="en")
                 h3.center Héroe por un día 
                 +youtube('3sFR6svhS8g')
 
+        // build:js js/codigos.min.js
         each js in files.JS
             script(src=`../${js}`)
+        // end bluid:js
 

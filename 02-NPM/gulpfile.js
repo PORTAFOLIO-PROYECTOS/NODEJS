@@ -37,33 +37,50 @@ const gulp = require('gulp'),
             `${dir.dist}/js/codigos.js`
         ],
         mJS: 'codigos.min.js',
-        fonts: [
-            `${dir.nm}/font-awesome/fonts/*.*`,
-        ],
+        fonts: [`${dir.nm}/font-awesome/fonts/*.*`],
         statics: [
-            `${dir.nm}/humans.txt`,,
-            `${dir.nm}/sitemap.xml`,
+            `${dir.src}/humans.txt`,
+            `${dir.src}/sitemap.xml`
         ]
     },
     opts = {
         pug: {
-            pretty: true, //False para minificar archivos
+            pretty: true,
             locals: {
                 title: 'Maratón',
                 files: files
             }
         },
-        sass: {outputStyle: 'compressed'},
-        es6: {presets: ['es2015']},
+        sass: {
+            outputStyle: 'compressed'
+        },
+        es6: {
+            presets: ['es2015']
+        },
         imagemin: {
-            prograssive: true,
+            progressive: true,
             use: [pngquant()]
         },
         svgmin: {
-            plugins: [
-                {convertColors: false},
-                {removeAttrs: {attrs: ['fill']}}
+            plugins: [{
+                    convertColors: false
+                },
+                {
+                    removeAttrs: {
+                        attrs: ['fill']
+                    }
+                }
             ]
+        },
+        uncss: {
+            html: [`${dir.dist}/*.html`]
+        },
+        autoprefixer: {
+            browsers: ['last 5 versions'],
+            cascade: false
+        },
+        htmlmin: {
+            collapseWhitespace: true
         }
     };
 
@@ -85,21 +102,21 @@ gulp.task('es6', () => {
     gulp
         .src(`${dir.src}/es6/*.js`)
         .pipe(babel(opts.es6))
-        .pipe(gulp.dest(`${dir.dist}/js`))
+        .pipe(gulp.dest(`${dir.dist}/js`));
 });
 
 gulp.task('img', () => {
     gulp
         .src(`${dir.src}/img/**/*.+(png|jpeg|jpg|gif)`)
         .pipe(imagemin(opts.imagemin))
-        .pipe(gulp.dest(`${dir.dist}/img`))
+        .pipe(gulp.dest(`${dir.dist}/img`));
 });
 
 gulp.task('svg', () => {
     gulp
         .src(`${dir.src}/img/svg/*.svg`)
         .pipe(svgmin(opts.svgmin))
-        .pipe(gulp.dest(`${dir.dist}/img/svg`))
+        .pipe(gulp.dest(`${dir.dist}/img/svg`));
 });
 
 gulp.task('webp', () => {
@@ -110,13 +127,39 @@ gulp.task('webp', () => {
 });
 
 gulp.task('fonts', () => {
-	gulp
-		.src(files.fonts)
-		.pipe( gulp.dest(`${dir.dist}/fonts`) );
+    gulp
+        .src(files.fonts)
+        .pipe(gulp.dest(`${dir.dist}/fonts`));
 });
 
 gulp.task('statics', () => {
-	gulp
-		.src(files.statics)
-		.pipe( gulp.dest(dir.dist) );
+    gulp
+        .src(files.statics)
+        .pipe(gulp.dest(dir.dist));
+});
+
+gulp.task('css', () => {
+    gulp
+        .src(files.CSS)
+        .pipe(concat(files.mCSS))
+        .pipe(uncss(opts.uncss))
+        .pipe(autoprefixer(opts.autoprefixer))
+        .pipe(cleanCSS())
+        .pipe(gulp.dest(`${dir.dist}/css`));
+});
+
+gulp.task('js', () => {
+    gulp
+        .src(files.JS)
+        .pipe(concat(files.mJS))
+        .pipe(uglify())
+        .pipe(gulp.dest(`${dir.dist}/js`));
+});
+
+gulp.task('html', () => {
+    gulp
+        .src(`${dir.dist}/*.html`)
+        .pipe(useref())
+        .pipe(htmlmin(opts.htmlmin))
+        .pipe(gulp.dest(dir.dist));
 });
