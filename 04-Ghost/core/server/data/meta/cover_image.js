@@ -1,18 +1,18 @@
-var urlService = require('../../services/url'),
+var config           = require('../../config'),
     getContextObject = require('./context_object.js'),
-    _ = require('lodash');
+    _                = require('lodash');
 
 function getCoverImage(data) {
     var context = data.context ? data.context : null,
         contextObject = getContextObject(data, context);
 
     if (_.includes(context, 'home') || _.includes(context, 'author')) {
-        if (contextObject.cover_image) {
-            return urlService.utils.urlFor('image', {image: contextObject.cover_image}, true);
+        if (contextObject.cover) {
+            return config.urlFor('image', {image: contextObject.cover}, true);
         }
     } else {
-        if (contextObject.feature_image) {
-            return urlService.utils.urlFor('image', {image: contextObject.feature_image}, true);
+        if (contextObject.image) {
+            return config.urlFor('image', {image: contextObject.image}, true);
         }
     }
     return null;

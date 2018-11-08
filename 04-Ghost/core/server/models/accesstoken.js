@@ -1,19 +1,24 @@
-const ghostBookshelf = require('./base'),
-    Basetoken = require('./base/token');
+var ghostBookshelf  = require('./base'),
+    Basetoken       = require('./base/token'),
+    events         = require('../events'),
 
-let Accesstoken,
+    Accesstoken,
     Accesstokens;
 
 Accesstoken = Basetoken.extend({
     tableName: 'accesstokens',
 
-    emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'token' + '.' + event;
-        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
+    emitChange: function emitChange(event) {
+        // Event named 'token' as access and refresh token will be merged in future, see #6626
+        events.emit('token' + '.' + event, this);
     },
 
-    onCreated: function onCreated(model, attrs, options) {
-        model.emitChange('added', options);
+    initialize: function initialize() {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+
+        this.on('created', function onCreated(model) {
+            model.emitChange('added');
+        });
     }
 });
 

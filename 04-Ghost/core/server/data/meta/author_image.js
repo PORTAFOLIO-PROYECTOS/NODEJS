@@ -1,13 +1,13 @@
-var urlService = require('../../services/url'),
+var config           = require('../../config'),
     getContextObject = require('./context_object.js'),
-    _ = require('lodash');
+    _                = require('lodash');
 
 function getAuthorImage(data, absolute) {
     var context = data.context ? data.context : null,
         contextObject = getContextObject(data, context);
 
-    if ((_.includes(context, 'post') || _.includes(context, 'page')) && contextObject.primary_author && contextObject.primary_author.profile_image) {
-        return urlService.utils.urlFor('image', {image: contextObject.primary_author.profile_image}, absolute);
+    if ((_.includes(context, 'post') || _.includes(context, 'page')) && contextObject.author && contextObject.author.image) {
+        return config.urlFor('image', {image: contextObject.author.image}, absolute);
     }
     return null;
 }

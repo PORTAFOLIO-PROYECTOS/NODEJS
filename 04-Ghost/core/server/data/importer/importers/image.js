@@ -1,6 +1,6 @@
-var _ = require('lodash'),
+var _       = require('lodash'),
     Promise = require('bluebird'),
-    storage = require('../../../adapters/storage'),
+    storage = require('../../../storage'),
     replaceImage,
     ImageImporter,
     preProcessPosts,
@@ -8,10 +8,6 @@ var _ = require('lodash'),
     preProcessUsers;
 
 replaceImage = function (markdown, image) {
-    if (!markdown) {
-        return;
-    }
-
     // Normalizes to include a trailing slash if there was one
     var regex = new RegExp('(/)?' + image.originalPath, 'gm');
 
@@ -24,27 +20,27 @@ preProcessPosts = function (data, image) {
         if (post.html) {
             post.html = replaceImage(post.html, image);
         }
-        if (post.feature_image) {
-            post.feature_image = replaceImage(post.feature_image, image);
+        if (post.image) {
+            post.image = replaceImage(post.image, image);
         }
     });
 };
 
 preProcessTags = function (data, image) {
     _.each(data.tags, function (tag) {
-        if (tag.feature_image) {
-            tag.feature_image = replaceImage(tag.feature_image, image);
+        if (tag.image) {
+            tag.image = replaceImage(tag.image, image);
         }
     });
 };
 
 preProcessUsers = function (data, image) {
     _.each(data.users, function (user) {
-        if (user.cover_image) {
-            user.cover_image = replaceImage(user.cover_image, image);
+        if (user.cover) {
+            user.cover = replaceImage(user.cover, image);
         }
-        if (user.profile_image) {
-            user.profile_image = replaceImage(user.profile_image, image);
+        if (user.image) {
+            user.image = replaceImage(user.image, image);
         }
     });
 };

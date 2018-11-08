@@ -1,8 +1,8 @@
-var _ = require('lodash'),
+var _       = require('lodash'),
     Promise = require('bluebird'),
-    common = require('../../lib/common'),
-    db = require('../db'),
-    schema = require('./schema'),
+    i18n    = require('../../i18n'),
+    db      = require('../db'),
+    schema  = require('./schema'),
     clients = require('./clients');
 
 function addTableColumn(tableName, table, columnName) {
@@ -12,12 +12,8 @@ function addTableColumn(tableName, table, columnName) {
     // creation distinguishes between text with fieldtype, string with maxlength and all others
     if (columnSpec.type === 'text' && columnSpec.hasOwnProperty('fieldtype')) {
         column = table[columnSpec.type](columnName, columnSpec.fieldtype);
-    } else if (columnSpec.type === 'string') {
-        if (columnSpec.hasOwnProperty('maxlength')) {
-            column = table[columnSpec.type](columnName, columnSpec.maxlength);
-        } else {
-            column = table[columnSpec.type](columnName, 191);
-        }
+    } else if (columnSpec.type === 'string' && columnSpec.hasOwnProperty('maxlength')) {
+        column = table[columnSpec.type](columnName, columnSpec.maxlength);
     } else {
         column = table[columnSpec.type](columnName);
     }
@@ -25,7 +21,7 @@ function addTableColumn(tableName, table, columnName) {
     if (columnSpec.hasOwnProperty('nullable') && columnSpec.nullable === true) {
         column.nullable();
     } else {
-        column.nullable(false);
+        column.notNullable();
     }
     if (columnSpec.hasOwnProperty('primary') && columnSpec.primary === true) {
         column.primary();
@@ -42,9 +38,6 @@ function addTableColumn(tableName, table, columnName) {
     }
     if (columnSpec.hasOwnProperty('defaultTo')) {
         column.defaultTo(columnSpec.defaultTo);
-    }
-    if (columnSpec.hasOwnProperty('index') && columnSpec.index === true) {
-        column.index();
     }
 }
 
@@ -72,24 +65,13 @@ function dropUnique(table, column, transaction) {
     });
 }
 
-/**
- * https://github.com/tgriesser/knex/issues/1303
- * createTableIfNotExists can throw error if indexes are already in place
- */
 function createTable(table, transaction) {
-    return (transaction || db.knex).schema.hasTable(table)
-        .then(function (exists) {
-            if (exists) {
-                return;
-            }
-
-            return (transaction || db.knex).schema.createTable(table, function (t) {
-                var columnKeys = _.keys(schema[table]);
-                _.each(columnKeys, function (column) {
-                    return addTableColumn(table, t, column);
-                });
-            });
+    return (transaction || db.knex).schema.createTableIfNotExists(table, function (t) {
+        var columnKeys = _.keys(schema[table]);
+        _.each(columnKeys, function (column) {
+            return addTableColumn(table, t, column);
         });
+    });
 }
 
 function deleteTable(table, transaction) {
@@ -100,10 +82,10 @@ function getTables(transaction) {
     var client = (transaction || db.knex).client.config.client;
 
     if (_.includes(_.keys(clients), client)) {
-        return clients[client].getTables(transaction);
+        return clients[client].getTables();
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function getIndexes(table, transaction) {
@@ -113,7 +95,7 @@ function getIndexes(table, transaction) {
         return clients[client].getIndexes(table, transaction);
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function getColumns(table, transaction) {
@@ -123,7 +105,7 @@ function getColumns(table, transaction) {
         return clients[client].getColumns(table);
     }
 
-    return Promise.reject(common.i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
+    return Promise.reject(i18n.t('notices.data.utils.index.noSupportForDatabase', {client: client}));
 }
 
 function checkTables(transaction) {

@@ -1,14 +1,11 @@
 // # Ghost Server
 // Handles the creation of an HTTP Server for Ghost
-var debug = require('ghost-ignition').debug('server'),
-    Promise = require('bluebird'),
-    fs = require('fs-extra'),
-    path = require('path'),
-    _ = require('lodash'),
+var Promise = require('bluebird'),
+    chalk = require('chalk'),
+    fs = require('fs'),
+    errors = require('./errors'),
     config = require('./config'),
-    urlService = require('./services/url'),
-    common = require('./lib/common'),
-    moment = require('moment');
+    i18n   = require('./i18n');
 
 /**
  * ## GhostServer
@@ -36,70 +33,50 @@ function GhostServer(rootApp) {
  * @return {Promise} Resolves once Ghost has started
  */
 GhostServer.prototype.start = function (externalApp) {
-    debug('Starting...');
     var self = this,
-        rootApp = externalApp ? externalApp : self.rootApp,
-        socketConfig, socketValues = {
-            path: path.join(config.get('paths').contentPath, config.get('env') + '.socket'),
-            permissions: '660'
-        };
+        rootApp = externalApp ? externalApp : self.rootApp;
 
-    return new Promise(function (resolve, reject) {
-        if (config.get('server').hasOwnProperty('socket')) {
-            socketConfig = config.get('server').socket;
+    return new Promise(function (resolve) {
+        var socketConfig = config.getSocket();
 
-            if (_.isString(socketConfig)) {
-                socketValues.path = socketConfig;
-            } else if (_.isObject(socketConfig)) {
-                socketValues.path = socketConfig.path || socketValues.path;
-                socketValues.permissions = socketConfig.permissions || socketValues.permissions;
-            }
-
+        if (socketConfig) {
             // Make sure the socket is gone before trying to create another
             try {
-                fs.unlinkSync(socketValues.path);
+                fs.unlinkSync(socketConfig.path);
             } catch (e) {
                 // We can ignore this.
             }
 
-            self.httpServer = rootApp.listen(socketValues.path);
-            fs.chmod(socketValues.path, socketValues.permissions);
-            config.set('server:socket', socketValues);
+            self.httpServer = rootApp.listen(socketConfig.path);
+
+            fs.chmod(socketConfig.path, socketConfig.permissions);
         } else {
             self.httpServer = rootApp.listen(
-                config.get('server').port,
-                config.get('server').host
+                config.server.port,
+                config.server.host
             );
         }
 
         self.httpServer.on('error', function (error) {
-            var ghostError;
-
             if (error.errno === 'EADDRINUSE') {
-                ghostError = new common.errors.GhostError({
-                    message: common.i18n.t('errors.httpServer.addressInUse.error'),
-                    context: common.i18n.t('errors.httpServer.addressInUse.context', {port: config.get('server').port}),
-                    help: common.i18n.t('errors.httpServer.addressInUse.help')
-                });
+                errors.logError(
+                    i18n.t('errors.httpServer.addressInUse.error'),
+                    i18n.t('errors.httpServer.addressInUse.context', {port: config.server.port}),
+                    i18n.t('errors.httpServer.addressInUse.help')
+                );
             } else {
-                ghostError = new common.errors.GhostError({
-                    message: common.i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
-                    context: common.i18n.t('errors.httpServer.otherError.context'),
-                    help: common.i18n.t('errors.httpServer.otherError.help')
-                });
+                errors.logError(
+                    i18n.t('errors.httpServer.otherError.error', {errorNumber: error.errno}),
+                    i18n.t('errors.httpServer.otherError.context'),
+                    i18n.t('errors.httpServer.otherError.help')
+                );
             }
-
-            reject(ghostError);
+            process.exit(-1);
         });
         self.httpServer.on('connection', self.connection.bind(self));
         self.httpServer.on('listening', function () {
-            debug('...Started');
             self.logStartMessages();
-
-            return GhostServer.announceServerStart()
-                .finally(() => {
-                    resolve(self);
-                });
+            resolve(self);
         });
     });
 };
@@ -118,7 +95,6 @@ GhostServer.prototype.stop = function () {
             resolve(self);
         } else {
             self.httpServer.close(function () {
-                common.events.emit('server.stop');
                 self.httpServer = null;
                 self.logShutdownMessages();
                 resolve(self);
@@ -135,9 +111,7 @@ GhostServer.prototype.stop = function () {
  * @returns {Promise} Resolves once Ghost has restarted
  */
 GhostServer.prototype.restart = function () {
-    return this.stop().then(function (ghostServer) {
-        return ghostServer.start();
-    });
+    return this.stop().then(this.start.bind(this));
 };
 
 /**
@@ -145,7 +119,7 @@ GhostServer.prototype.restart = function () {
  * To be called after `stop`
  */
 GhostServer.prototype.hammertime = function () {
-    common.logging.info(common.i18n.t('notices.httpServer.cantTouchThis'));
+    console.log(chalk.green(i18n.t('notices.httpServer.cantTouchThis')));
 
     return Promise.resolve(this);
 };
@@ -191,190 +165,48 @@ GhostServer.prototype.closeConnections = function () {
  */
 GhostServer.prototype.logStartMessages = function () {
     // Startup & Shutdown messages
-    if (config.get('env') === 'production') {
-        common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
-        common.logging.info(common.i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: urlService.utils.urlFor('home', true)}));
-        common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
+    if (process.env.NODE_ENV === 'production') {
+        console.log(
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            i18n.t('notices.httpServer.yourBlogIsAvailableOn', {url: config.url}),
+            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
+        );
     } else {
-        common.logging.info(common.i18n.t('notices.httpServer.ghostIsRunningIn', {env: config.get('env')}));
-        common.logging.info(common.i18n.t('notices.httpServer.listeningOn', {
-            host: config.get('server').socket || config.get('server').host,
-            port: config.get('server').port
-        }));
-        common.logging.info(common.i18n.t('notices.httpServer.urlConfiguredAs', {url: urlService.utils.urlFor('home', true)}));
-        common.logging.info(common.i18n.t('notices.httpServer.ctrlCToShutDown'));
+        console.log(
+            chalk.green(i18n.t('notices.httpServer.ghostIsRunningIn', {env: process.env.NODE_ENV})),
+            i18n.t('notices.httpServer.listeningOn'),
+            config.getSocket() || config.server.host + ':' + config.server.port,
+            i18n.t('notices.httpServer.urlConfiguredAs', {url: config.url}),
+            chalk.gray(i18n.t('notices.httpServer.ctrlCToShutDown'))
+        );
     }
 
     function shutdown() {
-        common.logging.warn(common.i18n.t('notices.httpServer.ghostHasShutdown'));
-
-        if (config.get('env') === 'production') {
-            common.logging.warn(common.i18n.t('notices.httpServer.yourBlogIsNowOffline'));
+        console.log(chalk.red(i18n.t('notices.httpServer.ghostHasShutdown')));
+        if (process.env.NODE_ENV === 'production') {
+            console.log(
+                i18n.t('notices.httpServer.yourBlogIsNowOffline')
+            );
         } else {
-            common.logging.warn(
-                common.i18n.t('notices.httpServer.ghostWasRunningFor'),
-                moment.duration(process.uptime(), 'seconds').humanize()
+            console.log(
+                i18n.t('notices.httpServer.ghostWasRunningFor'),
+                Math.round(process.uptime()),
+                i18n.t('common.time.seconds')
             );
         }
-
         process.exit(0);
     }
-
     // ensure that Ghost exits correctly on Ctrl+C and SIGTERM
-    process.removeAllListeners('SIGINT').on('SIGINT', shutdown).removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
+    process.
+        removeAllListeners('SIGINT').on('SIGINT', shutdown).
+        removeAllListeners('SIGTERM').on('SIGTERM', shutdown);
 };
 
 /**
  * ### Log Shutdown Messages
  */
 GhostServer.prototype.logShutdownMessages = function () {
-    common.logging.warn(common.i18n.t('notices.httpServer.ghostIsClosingConnections'));
+    console.log(chalk.red(i18n.t('notices.httpServer.ghostIsClosingConnections')));
 };
 
 module.exports = GhostServer;
-
-const connectToBootstrapSocket = (message) => {
-    const socketAddress = config.get('bootstrap-socket');
-    const net = require('net');
-    const client = new net.Socket();
-
-    return new Promise((resolve) => {
-        const connect = (options = {}) => {
-            let wasResolved = false;
-
-            const waitTimeout = setTimeout(() => {
-                common.logging.info('Bootstrap socket timed out.');
-
-                if (!client.destroyed) {
-                    client.destroy();
-                }
-
-                if (wasResolved) {
-                    return;
-                }
-
-                wasResolved = true;
-                resolve();
-            }, 1000 * 5);
-
-            client.connect(socketAddress.port, socketAddress.host, () => {
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                client.write(JSON.stringify(message));
-
-                if (wasResolved) {
-                    return;
-                }
-
-                wasResolved = true;
-                resolve();
-            });
-
-            client.on('close', () => {
-                common.logging.info('Bootstrap client was closed.');
-
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-            });
-
-            client.on('error', (err) => {
-                common.logging.warn(`Can't connect to the bootstrap socket (${socketAddress.host} ${socketAddress.port}) ${err.code}`);
-
-                client.removeAllListeners();
-
-                if (waitTimeout) {
-                    clearTimeout(waitTimeout);
-                }
-
-                if (options.tries < 3) {
-                    common.logging.warn(`Tries: ${options.tries}`);
-
-                    // retry
-                    common.logging.warn('Retrying...');
-
-                    options.tries = options.tries + 1;
-                    const retryTimeout = setTimeout(() => {
-                        clearTimeout(retryTimeout);
-                        connect(options);
-                    }, 150);
-                } else {
-                    if (wasResolved) {
-                        return;
-                    }
-
-                    wasResolved = true;
-                    resolve();
-                }
-            });
-        };
-
-        connect({tries: 0});
-    });
-};
-
-/**
- * @NOTE announceServerStartCalled:
- *
- * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
- * - we told them to call `announceServerStart`, which is not required anymore, because we restructured the code
- */
-let announceServerStartCalled = false;
-module.exports.announceServerStart = function announceServerStart() {
-    if (announceServerStartCalled || config.get('maintenance:enabled')) {
-        return Promise.resolve();
-    }
-    announceServerStartCalled = true;
-
-    common.events.emit('server.start');
-
-    // CASE: IPC communication to the CLI via child process.
-    if (process.send) {
-        process.send({
-            started: true
-        });
-    }
-
-    // CASE: Ghost extension - bootstrap sockets
-    if (config.get('bootstrap-socket')) {
-        return connectToBootstrapSocket({
-            started: true
-        });
-    }
-
-    return Promise.resolve();
-};
-
-/**
- * @NOTE announceServerStopCalled:
- *
- * - backwards compatible logic, because people complained that not all themes were loaded when using Ghost as NPM module
- * - we told them to call `announceServerStart`, which is not required anymore, because we restructured code
- */
-let announceServerStopCalled = false;
-module.exports.announceServerStopped = function announceServerStopped(error) {
-    if (announceServerStopCalled) {
-        return Promise.resolve();
-    }
-    announceServerStopCalled = true;
-
-    // CASE: IPC communication to the CLI via child process.
-    if (process.send) {
-        process.send({
-            started: false,
-            error: error
-        });
-    }
-
-    // CASE: Ghost extension - bootstrap sockets
-    if (config.get('bootstrap-socket')) {
-        return connectToBootstrapSocket({
-            started: false,
-            error: error
-        });
-    }
-
-    return Promise.resolve();
-};

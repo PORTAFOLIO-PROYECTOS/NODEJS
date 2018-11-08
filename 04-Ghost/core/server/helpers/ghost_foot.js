@@ -2,29 +2,27 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-var proxy = require('./proxy'),
-    _ = require('lodash'),
-    SafeString = proxy.SafeString,
-    filters = proxy.filters,
-    settingsCache = proxy.settingsCache;
-
+//
 // We use the name ghost_foot to match the helper for consistency:
-module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
-    var foot = [],
-        globalCodeinjection = settingsCache.get('ghost_foot'),
-        postCodeinjection = options.data.root && options.data.root.post ? options.data.root.post.codeinjection_foot : null;
+// jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-    if (!_.isEmpty(globalCodeinjection)) {
-        foot.push(globalCodeinjection);
-    }
+var hbs             = require('express-hbs'),
+    _               = require('lodash'),
+    filters         = require('../filters'),
+    api             = require('../api'),
+    ghost_foot;
 
-    if (!_.isEmpty(postCodeinjection)) {
-        foot.push(postCodeinjection);
-    }
+ghost_foot = function (options) {
+    /*jshint unused:false*/
+    var foot = [];
 
-    return filters
-        .doFilter('ghost_foot', foot)
-        .then(function (foot) {
-            return new SafeString(foot.join(' ').trim());
-        });
+    return api.settings.read({key: 'ghost_foot'}).then(function (response) {
+        foot.push(response.settings[0].value);
+        return filters.doFilter('ghost_foot', foot);
+    }).then(function (foot) {
+        var footString = _.reduce(foot, function (memo, item) { return memo + ' ' + item; }, '');
+        return new hbs.handlebars.SafeString(footString.trim());
+    });
 };
+
+module.exports = ghost_foot;

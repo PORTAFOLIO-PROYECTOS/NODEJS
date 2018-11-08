@@ -1,4 +1,4 @@
-var urlService = require('../../services/url');
+var config = require('../../config');
 
 function getAuthorUrl(data, absolute) {
     var context = data.context ? data.context[0] : null;
@@ -6,13 +6,11 @@ function getAuthorUrl(data, absolute) {
     context = context === 'amp' ? 'post' : context;
 
     if (data.author) {
-        return urlService.getUrlByResourceId(data.author.id, {absolute: absolute, secure: data.author.secure, withSubdirectory: true});
+        return config.urlFor('author', {author: data.author}, absolute);
     }
-
-    if (data[context] && data[context].primary_author) {
-        return urlService.getUrlByResourceId(data[context].primary_author.id, {absolute: absolute, secure: data[context].secure, withSubdirectory: true});
+    if (data[context] && data[context].author) {
+        return config.urlFor('author', {author: data[context].author}, absolute);
     }
-
     return null;
 }
 

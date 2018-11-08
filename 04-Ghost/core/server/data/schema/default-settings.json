@@ -1,61 +1,62 @@
 {
     "core": {
-        "db_hash": {
+        "databaseVersion": {
+            "defaultValue": "007"
+        },
+        "dbHash": {
             "defaultValue": null
         },
-        "next_update_check": {
+        "nextUpdateCheck": {
             "defaultValue": null
         },
-        "notifications": {
+        "displayUpdateNotification": {
+            "defaultValue": null
+        },
+        "seenNotifications": {
             "defaultValue": "[]"
         },
-        "session_secret": {
-            "defaultValue": null
+        "migrations": {
+            "defaultValue": "{}"
         }
     },
     "blog": {
         "title": {
-            "defaultValue": "Ghost",
-            "validations": {
-                "isLength": {
-                    "max": 150
-                }
-            }
+            "defaultValue": "Ghost"
         },
         "description": {
-            "defaultValue": "The professional publishing platform",
-            "validations": {
-                "isLength": {
-                    "max": 200
-                }
-            }
+            "defaultValue": "Just a blogging platform."
         },
         "logo": {
-            "defaultValue": "https://casper.ghost.org/v1.0.0/images/ghost-logo.svg"
-        },
-        "cover_image": {
-            "defaultValue": "https://casper.ghost.org/v1.0.0/images/blog-cover.jpg"
-        },
-        "icon": {
             "defaultValue": ""
         },
-        "default_locale": {
-            "defaultValue": "en",
+        "cover": {
+            "defaultValue": ""
+        },
+        "defaultLang": {
+            "defaultValue": "en_US",
             "validations": {
-                "isEmpty": false
+                "isNull": false
             }
         },
-        "active_timezone": {
+        "postsPerPage": {
+            "defaultValue": "5",
+            "validations": {
+                "isNull": false,
+                "isInt": true,
+                "isLength": [1, 1000]
+            }
+        },
+        "activeTimezone": {
             "defaultValue": "Etc/UTC",
             "validations": {
                 "isTimezone": true,
-                "isEmpty": false
+                "isNull": false
             }
         },
-        "force_i18n": {
+        "forceI18n": {
             "defaultValue": "true",
             "validations": {
-                "isEmpty": false,
+                "isNull": false,
                 "isIn": [["true", "false"]]
             }
         },
@@ -63,12 +64,9 @@
             "defaultValue": "/:slug/",
             "validations": {
                 "matches": "^(\/:?[a-z0-9_-]+){1,5}\/$",
-                "matches": "(:id|:slug|:year|:month|:day|:author|:primary_tag|:primary_author)",
+                "matches": "(:id|:slug|:year|:month|:day|:author)",
                 "notContains": "/ghost/"
             }
-        },
-        "amp": {
-            "defaultValue" : "true"
         },
         "ghost_head": {
             "defaultValue" : ""
@@ -77,46 +75,40 @@
             "defaultValue" : ""
         },
         "facebook": {
-            "defaultValue" : "ghost"
+            "defaultValue" : ""
         },
         "twitter": {
-            "defaultValue" : "tryghost"
+            "defaultValue" : ""
         },
         "labs": {
-            "defaultValue": "{\"publicAPI\": true}"
+            "defaultValue": "{}"
         },
         "navigation": {
-            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"},{\"label\":\"Tag\", \"url\":\"/tag/getting-started/\"}, {\"label\":\"Author\", \"url\":\"/author/ghost/\"},{\"label\":\"Help\", \"url\":\"https://help.ghost.org\"}]"
+            "defaultValue": "[{\"label\":\"Home\", \"url\":\"/\"}]"
         },
         "slack": {
             "defaultValue": "[{\"url\":\"\"}]"
-        },
-        "unsplash": {
-            "defaultValue": "{\"isActive\": true}"
         }
     },
     "theme": {
-        "active_theme": {
+        "activeTheme": {
             "defaultValue": "casper"
         }
     },
     "app": {
-        "active_apps": {
+        "activeApps": {
             "defaultValue": "[]"
         },
-        "installed_apps": {
+        "installedApps": {
             "defaultValue": "[]"
         }
     },
     "private": {
-        "is_private": {
+        "isPrivate": {
             "defaultValue": "false"
         },
         "password": {
             "defaultValue": ""
-        },
-        "public_hash": {
-            "defaultValue": null
         }
     }
 }

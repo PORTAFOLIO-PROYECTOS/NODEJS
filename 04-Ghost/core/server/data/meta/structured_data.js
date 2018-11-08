@@ -1,4 +1,4 @@
-var social = require('../../lib/social');
+var socialUrls = require('../../utils/social-urls');
 
 function getStructuredData(metaData) {
     var structuredData,
@@ -11,23 +11,20 @@ function getStructuredData(metaData) {
     structuredData = {
         'og:site_name': metaData.blog.title,
         'og:type': metaData.ogType,
-        'og:title': metaData.ogTitle || metaData.metaTitle,
-        // CASE: metaData.excerpt for post context is populated by either the custom excerpt,
-        // the meta description, or the automated excerpt of 50 words. It is empty for any
-        // other context and *always* uses the provided meta description fields.
-        'og:description': metaData.ogDescription || metaData.excerpt || metaData.metaDescription,
+        'og:title': metaData.metaTitle,
+        'og:description': metaData.metaDescription || metaData.excerpt,
         'og:url': metaData.canonicalUrl,
-        'og:image': metaData.ogImage.url || metaData.coverImage.url,
+        'og:image': metaData.coverImage.url,
         'article:published_time': metaData.publishedDate,
         'article:modified_time': metaData.modifiedDate,
         'article:tag': metaData.keywords,
-        'article:publisher': metaData.blog.facebook ? social.urls.facebook(metaData.blog.facebook) : undefined,
-        'article:author': metaData.authorFacebook ? social.urls.facebook(metaData.authorFacebook) : undefined,
+        'article:publisher': metaData.blog.facebook ? socialUrls.facebookUrl(metaData.blog.facebook) : undefined,
+        'article:author': metaData.authorFacebook ? socialUrls.facebookUrl(metaData.authorFacebook) : undefined,
         'twitter:card': card,
-        'twitter:title': metaData.twitterTitle || metaData.metaTitle,
-        'twitter:description': metaData.twitterDescription || metaData.excerpt || metaData.metaDescription,
+        'twitter:title': metaData.metaTitle,
+        'twitter:description': metaData.metaDescription || metaData.excerpt,
         'twitter:url': metaData.canonicalUrl,
-        'twitter:image': metaData.twitterImage || metaData.coverImage.url,
+        'twitter:image': metaData.coverImage.url,
         'twitter:label1': metaData.authorName ? 'Written by' : undefined,
         'twitter:data1': metaData.authorName,
         'twitter:label2': metaData.keywords ? 'Filed under' : undefined,
@@ -36,10 +33,7 @@ function getStructuredData(metaData) {
         'twitter:creator': metaData.creatorTwitter || undefined
     };
 
-    if (metaData.ogImage.dimensions) {
-        structuredData['og:image:width'] = metaData.ogImage.dimensions.width;
-        structuredData['og:image:height'] = metaData.ogImage.dimensions.height;
-    } else if (metaData.coverImage.dimensions) {
+    if (metaData.coverImage.dimensions) {
         structuredData['og:image:width'] = metaData.coverImage.dimensions.width;
         structuredData['og:image:height'] = metaData.coverImage.dimensions.height;
     }

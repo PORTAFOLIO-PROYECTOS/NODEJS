@@ -1,45 +1,39 @@
-const path = require('path'),
-    express = require('express'),
-    middleware = require('./middleware'),
-    bodyParser = require('body-parser'),
-    routing = require('../../../services/routing'),
-    web = require('../../../web'),
-    templateName = 'private',
+var path                = require('path'),
+    express             = require('express'),
+    middleware          = require('./middleware'),
+    templates           = require('../../../controllers/frontend/templates'),
+    setResponseContext  = require('../../../controllers/frontend/context'),
     privateRouter = express.Router();
 
-function _renderer(req, res) {
-    res.routerOptions = {
-        type: 'custom',
-        templates: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
-    };
-
-    // Renderer begin
-    // Format data
-    let data = {};
+function controller(req, res) {
+    var defaultView = path.resolve(__dirname, 'views', 'private.hbs'),
+        paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
+        data = {};
 
     if (res.error) {
         data.error = res.error;
     }
 
-    // Render Call
-    return routing.helpers.renderer(req, res, data);
+    setResponseContext(req, res);
+    if (paths.hasOwnProperty('private.hbs')) {
+        return res.render('private', data);
+    } else {
+        return res.render(defaultView, data);
+    }
 }
 
 // password-protected frontend route
-privateRouter
-    .route('/')
+privateRouter.route('/')
     .get(
         middleware.isPrivateSessionAuth,
-        _renderer
+        controller
     )
     .post(
-        bodyParser.urlencoded({extended: true}),
         middleware.isPrivateSessionAuth,
-        web.shared.middlewares.brute.privateBlog,
+        middleware.spamPrevention,
         middleware.authenticateProtection,
-        _renderer
+        controller
     );
 
 module.exports = privateRouter;
-module.exports.renderer = _renderer;
+module.exports.controller = controller;

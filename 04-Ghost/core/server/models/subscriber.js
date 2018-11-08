@@ -1,34 +1,35 @@
-const Promise = require('bluebird'),
-    ghostBookshelf = require('./base'),
-    common = require('../lib/common');
-
-let Subscriber,
+var ghostBookshelf = require('./base'),
+    errors = require('../errors'),
+    events = require('../events'),
+    i18n = require('../i18n'),
+    Promise = require('bluebird'),
+    uuid = require('node-uuid'),
+    Subscriber,
     Subscribers;
 
 Subscriber = ghostBookshelf.Model.extend({
     tableName: 'subscribers',
 
-    emitChange: function emitChange(event, options) {
-        const eventToTrigger = 'subscriber' + '.' + event;
-        ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
+    emitChange: function emitChange(event) {
+        events.emit('subscriber' + '.' + event, this);
     },
-
     defaults: function defaults() {
         return {
+            uuid: uuid.v4(),
             status: 'subscribed'
         };
     },
-
-    onCreated: function onCreated(model, response, options) {
-        model.emitChange('added', options);
-    },
-
-    onUpdated: function onUpdated(model, response, options) {
-        model.emitChange('edited', options);
-    },
-
-    onDestroyed: function onDestroyed(model, options) {
-        model.emitChange('deleted', options);
+    initialize: function initialize() {
+        ghostBookshelf.Model.prototype.initialize.apply(this, arguments);
+        this.on('created', function onCreated(model) {
+            model.emitChange('added');
+        });
+        this.on('updated', function onUpdated(model) {
+            model.emitChange('edited');
+        });
+        this.on('destroyed', function onDestroyed(model) {
+            model.emitChange('deleted');
+        });
     }
 }, {
 
@@ -43,7 +44,7 @@ Subscriber = ghostBookshelf.Model.extend({
     },
 
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
+        var options = ghostBookshelf.Model.permittedOptions(),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.
@@ -59,7 +60,7 @@ Subscriber = ghostBookshelf.Model.extend({
         return options;
     },
 
-    permissible: function permissible(postModelOrId, action, context, unsafeAttrs, loadedPermissions, hasUserPermission, hasAppPermission) {
+    permissible: function permissible(postModelOrId, action, context, loadedPermissions, hasUserPermission, hasAppPermission) {
         // CASE: external is only allowed to add and edit subscribers
         if (context.external) {
             if (['add', 'edit'].indexOf(action) !== -1) {
@@ -71,15 +72,15 @@ Subscriber = ghostBookshelf.Model.extend({
             return Promise.resolve();
         }
 
-        return Promise.reject(new common.errors.NoPermissionError({message: common.i18n.t('errors.models.subscriber.notEnoughPermission')}));
+        return Promise.reject(new errors.NoPermissionError(i18n.t('errors.models.subscriber.notEnoughPermission')));
     },
 
     // TODO: This is a copy paste of models/user.js!
-    getByEmail: function getByEmail(email, unfilteredOptions) {
-        var options = ghostBookshelf.Model.filterOptions(unfilteredOptions, 'getByEmail');
+    getByEmail: function getByEmail(email, options) {
+        options = options || {};
         options.require = true;
 
-        return Subscribers.forge().fetch(options).then(function then(subscribers) {
+        return Subscribers.forge(options).fetch(options).then(function then(subscribers) {
             var subscriberWithEmail = subscribers.find(function findSubscriber(subscriber) {
                 return subscriber.get('email').toLowerCase() === email.toLowerCase();
             });

@@ -9,28 +9,25 @@
 //
 // Block helper: `{{#author}}{{/author}}`
 // This is the default handlebars behaviour of dropping into the author object scope
-const proxy = require('./proxy'),
-    _ = require('lodash'),
-    urlService = require('../services/url'),
-    SafeString = proxy.SafeString,
-    handlebars = proxy.hbs.handlebars,
-    templates = proxy.templates;
 
-/**
- * @deprecated: will be removed in Ghost 3.0
- */
-module.exports = function author(options) {
+var hbs             = require('express-hbs'),
+    _               = require('lodash'),
+    config          = require('../config'),
+    utils           = require('./utils'),
+    author;
+
+author = function (options) {
     if (options.fn) {
-        return handlebars.helpers.with.call(this, this.author, options);
+        return hbs.handlebars.helpers.with.call(this, this.author, options);
     }
 
-    const autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true;
-    let output = '';
+    var autolink = _.isString(options.hash.autolink) && options.hash.autolink === 'false' ? false : true,
+        output = '';
 
     if (this.author && this.author.name) {
         if (autolink) {
-            output = templates.link({
-                url: urlService.getUrlByResourceId(this.author.id, {withSubdirectory: true}),
+            output = utils.linkTemplate({
+                url: config.urlFor('author', {author: this.author}),
                 text: _.escape(this.author.name)
             });
         } else {
@@ -38,5 +35,7 @@ module.exports = function author(options) {
         }
     }
 
-    return new SafeString(output);
+    return new hbs.handlebars.SafeString(output);
 };
+
+module.exports = author;

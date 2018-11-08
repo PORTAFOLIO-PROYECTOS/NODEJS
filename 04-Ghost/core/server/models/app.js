@@ -5,10 +5,11 @@ var ghostBookshelf = require('./base'),
 App = ghostBookshelf.Model.extend({
     tableName: 'apps',
 
-    onSaving: function onSaving(newPage, attr, options) {
+    saving: function saving(newPage, attr, options) {
+        /*jshint unused:false*/
         var self = this;
 
-        ghostBookshelf.Model.prototype.onSaving.apply(this, arguments);
+        ghostBookshelf.Model.prototype.saving.apply(this, arguments);
 
         if (this.hasChanged('slug') || !this.get('slug')) {
             // Pass the new slug through the generator to strip illegal characters, detect duplicates
@@ -34,7 +35,7 @@ App = ghostBookshelf.Model.extend({
     * @return {Array} Keys allowed in the `options` hash of the model's method.
     */
     permittedOptions: function permittedOptions(methodName) {
-        var options = ghostBookshelf.Model.permittedOptions.call(this, methodName),
+        var options = ghostBookshelf.Model.permittedOptions(),
 
             // whitelists for the `options` hash argument on methods, by method name.
             // these are the only options that can be passed to Bookshelf / Knex.

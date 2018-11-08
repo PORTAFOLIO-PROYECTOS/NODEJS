@@ -1,35 +1,38 @@
-const config = require('../../../config'),
-    Manager = require('./manager'),
-    manager = new Manager();
+var _       = require('lodash'),
+    utils   = require('../../../utils'),
+    sitemap = require('./index');
 
 // Responsible for handling requests for sitemap files
-module.exports = function handler(siteApp) {
-    const verifyResourceType = function verifyResourceType(req, res, next) {
-        if (!manager.hasOwnProperty(req.params.resource)) {
-            return res.sendStatus(404);
-        }
+module.exports = function handler(blogApp) {
+    var resourceTypes = ['posts', 'authors', 'tags', 'pages'],
+        verifyResourceType = function verifyResourceType(req, res, next) {
+            if (!_.includes(resourceTypes, req.params.resource)) {
+                return res.sendStatus(404);
+            }
 
-        next();
-    };
+            next();
+        },
+        getResourceSiteMapXml = function getResourceSiteMapXml(type, page) {
+            return sitemap.getSiteMapXml(type, page);
+        };
 
-    siteApp.get('/sitemap.xml', function sitemapXML(req, res) {
+    blogApp.get('/sitemap.xml', function sitemapXML(req, res) {
         res.set({
-            'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),
+            'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
             'Content-Type': 'text/xml'
         });
-
-        res.send(manager.getIndexXml());
+        res.send(sitemap.getIndexXml());
     });
 
-    siteApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
+    blogApp.get('/sitemap-:resource.xml', verifyResourceType, function sitemapResourceXML(req, res) {
         var type = req.params.resource,
-            page = 1;
+            page = 1,
+            siteMapXml = getResourceSiteMapXml(type, page);
 
         res.set({
-            'Cache-Control': 'public, max-age=' + config.get('caching:sitemap:maxAge'),
+            'Cache-Control': 'public, max-age=' + utils.ONE_HOUR_S,
             'Content-Type': 'text/xml'
         });
-
-        res.send(manager.getSiteMapXml(type, page));
+        res.send(siteMapXml);
     });
 };

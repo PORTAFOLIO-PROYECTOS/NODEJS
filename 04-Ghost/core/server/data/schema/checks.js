@@ -1,5 +1,5 @@
 function isPost(jsonData) {
-    return jsonData.hasOwnProperty('html') &&
+    return jsonData.hasOwnProperty('html') && jsonData.hasOwnProperty('markdown') &&
         jsonData.hasOwnProperty('title') && jsonData.hasOwnProperty('slug');
 }
 
@@ -10,7 +10,7 @@ function isTag(jsonData) {
 
 function isUser(jsonData) {
     return jsonData.hasOwnProperty('bio') && jsonData.hasOwnProperty('website') &&
-        jsonData.hasOwnProperty('profile_image') && jsonData.hasOwnProperty('location');
+        jsonData.hasOwnProperty('status') && jsonData.hasOwnProperty('location');
 }
 
 function isNav(jsonData) {

@@ -1,43 +1,34 @@
-const path = require('path'),
-    _ = require('lodash'),
-    express = require('express'),
-    subscribeRouter = express.Router(),
-    bodyParser = require('body-parser'),
+var path                = require('path'),
+    express             = require('express'),
+    _                   = require('lodash'),
+    subscribeRouter     = express.Router(),
+
     // Dirty requires
-    common = require('../../../lib/common'),
-    urlService = require('../../../services/url'),
-    validator = require('../../../data/validation').validator,
-    routing = require('../../../services/routing'),
-    templateName = 'subscribe';
+    api                 = require('../../../api'),
+    errors              = require('../../../errors'),
+    templates           = require('../../../controllers/frontend/templates'),
+    postlookup          = require('../../../controllers/frontend/post-lookup'),
+    setResponseContext  = require('../../../controllers/frontend/context');
 
-function _renderer(req, res) {
-    res.routerOptions = {
-        type: 'custom',
-        templates: templateName,
-        defaultTemplate: path.resolve(__dirname, 'views', `${templateName}.hbs`)
-    };
+function controller(req, res) {
+    var defaultView = path.resolve(__dirname, 'views', 'subscribe.hbs'),
+        paths = templates.getActiveThemePaths(req.app.get('activeTheme')),
+        data = req.body;
 
-    // Renderer begin
-    // Format data
-    const data = req.body;
-
-    // Render Call
-    return routing.helpers.renderer(req, res, data);
+    setResponseContext(req, res);
+    if (paths.hasOwnProperty('subscribe.hbs')) {
+        return res.render('subscribe', data);
+    } else {
+        return res.render(defaultView, data);
+    }
 }
 
-/**
- * Takes care of sanitizing the email input.
- * XSS prevention.
- * For success cases, we don't have to worry, because then the input contained a valid email address.
- */
 function errorHandler(error, req, res, next) {
-    req.body.email = '';
-    req.body.subscribed_url = santizeUrl(req.body.subscribed_url);
-    req.body.subscribed_referrer = santizeUrl(req.body.subscribed_referrer);
+    /*jshint unused:false */
 
     if (error.statusCode !== 404) {
         res.locals.error = error;
-        return _renderer(req, res);
+        return controller(req, res);
     }
 
     next(error);
@@ -53,43 +44,42 @@ function honeyPot(req, res, next) {
     next();
 }
 
-function santizeUrl(url) {
-    return validator.isEmptyOrURL(url || '') ? url : '';
-}
-
 function handleSource(req, res, next) {
-    req.body.subscribed_url = santizeUrl(req.body.location);
-    req.body.subscribed_referrer = santizeUrl(req.body.referrer);
-
+    req.body.subscribed_url = req.body.location;
+    req.body.subscribed_referrer = req.body.referrer;
     delete req.body.location;
     delete req.body.referrer;
 
-    const resource = urlService.getResource(urlService.utils.absoluteToRelative(req.body.subscribed_url, {withoutSubdirectory: true}));
+    postlookup(req.body.subscribed_url)
+        .then(function (result) {
+            if (result && result.post) {
+                req.body.post_id = result.post.id;
+            }
 
-    if (resource) {
-        req.body.post_id = resource.data.id;
-    }
+            next();
+        })
+        .catch(function (err) {
+            if (err instanceof errors.NotFoundError) {
+                return next();
+            }
 
-    next();
+            next(err);
+        });
 }
 
 function storeSubscriber(req, res, next) {
     req.body.status = 'subscribed';
 
-    const api = require('../../../api')[res.locals.apiVersion];
-
     if (_.isEmpty(req.body.email)) {
-        return next(new common.errors.ValidationError({message: 'Email cannot be blank.'}));
-    } else if (!validator.isEmail(req.body.email)) {
-        return next(new common.errors.ValidationError({message: 'Invalid email.'}));
+        return next(new errors.ValidationError('Email cannot be blank.'));
     }
 
     return api.subscribers.add({subscribers: [req.body]}, {context: {external: true}})
-        .then(() => {
+        .then(function () {
             res.locals.success = true;
             next();
         })
-        .catch(() => {
+        .catch(function () {
             // we do not expose any information
             res.locals.success = true;
             next();
@@ -97,21 +87,19 @@ function storeSubscriber(req, res, next) {
 }
 
 // subscribe frontend route
-subscribeRouter
-    .route('/')
+subscribeRouter.route('/')
     .get(
-        _renderer
+        controller
     )
     .post(
-        bodyParser.urlencoded({extended: true}),
         honeyPot,
         handleSource,
         storeSubscriber,
-        _renderer
+        controller
     );
 
 // configure an error handler just for subscribe problems
 subscribeRouter.use(errorHandler);
 
 module.exports = subscribeRouter;
-module.exports.storeSubscriber = storeSubscriber;
+module.exports.controller = controller;
