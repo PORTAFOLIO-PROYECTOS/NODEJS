@@ -1,0 +1,77 @@
+<div class="swiper-slide" data-history="{{slug}}">
+    <article class="{{post_class}} container article-container" data-id="{{comment_id}}">
+        <div class="row">
+            <div class="col-md-12 post-cover-container">
+                <time class="post-date" datetime="{{date format="YYYY-MM-DD"}}">{{reading_time}}</time>
+                <div class="post-cover post-meta {{#if feature_image}}has-image{{/if}}">
+                    <div class="pagination-number"></div>
+                    <h1 class="post-title col-lg-8 col-sm-10 offset-sm-1 offset-lg-2">{{title}}</h1>
+                    {{#if tags}}
+                        <ul class="tags">
+                        {{#foreach tags}}
+                            <li>
+                                <a href="{{url}}" title="{{name}}" class="tag tag-{{id}} {{slug}}">{{name}}</a>
+                            </li>  
+                        {{/foreach}}
+                        </ul>
+                    {{/if}}
+                    <a href="#" class="read-later" data-id="{{id}}"></a>
+                    {{#if feature_image}}
+                    <div class="cloned-content">
+                        <div class="img-holder" style="background-image: url({{img_url feature_image}})"></div>
+                        <div class="pagination-number"></div>
+                        <span class="post-title col-lg-8 col-sm-10 offset-sm-1 offset-lg-2">{{title}}</span>
+                        {{#if tags}}
+                            <ul class="tags">
+                            {{#foreach tags}}
+                                <li>
+                                    <a href="{{url}}" title="{{name}}" class="tag tag-{{id}} {{slug}}">{{name}}</a>
+                                </li>  
+                            {{/foreach}}
+                            </ul>
+                        {{/if}}
+                        <a href="#" class="read-later" data-id="{{id}}"></a>
+                    </div>
+                    {{/if}}
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-8 col-sm-10 offset-sm-1 offset-lg-2">
+                <section class="post-content">
+                    {{!-- Widget Area --}}
+                    {{content}}
+                    <div class="share-on">
+                        <p>Share on: </p>
+                        <a class="share-facebook" href="https://www.facebook.com/sharer/sharer.php?u={{url absolute="true"}}" onclick="window.open(this.href, 'share-facebook','width=580,height=296');return false;" title="Share on Facebook"><i class="fa fa-facebook" aria-hidden="true"></i></a>
+                        <a class="share-twitter" href="https://twitter.com/share?text={{encode title}}&amp;url={{url absolute="true"}}" onclick="window.open(this.href, 'share-twitter', 'width=550,height=235');return false;" title="Share on Twitter"><i class="fa fa-twitter" aria-hidden="true"></i></a>
+                        <a href="https://plus.google.com/share?url={{url absolute="true"}}" title="Share on Google+"><i class="fa fa-google-plus" aria-hidden="true"></i></a>
+                        <a href="https://www.reddit.com/submit?url={{url absolute="true"}}%2F&title={{encode title}}" title="Share on Reddit"><i class="fa fa-reddit-alien" aria-hidden="true"></i></a>
+                        <a href="mailto:?subject={{encode title}}&amp;body={{url absolute="true"}}" title="Share by Email"><i class="fa fa-envelope" aria-hidden="true"></i></a>
+                    </div>
+                    <div id="disqus_thread"></div>
+                    <script>
+
+                    /**
+                    *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR PLATFORM OR CMS.
+                    *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: https://disqus.com/admin/universalcode/#configuration-variables*/
+                    /*
+                    var disqus_config = function () {
+                    this.page.url = PAGE_URL;  // Replace PAGE_URL with your page's canonical URL variable
+                    this.page.identifier = PAGE_IDENTIFIER; // Replace PAGE_IDENTIFIER with your page's unique identifier variable
+                    };
+                    */
+                    (function() { // DON'T EDIT BELOW THIS LINE
+                    var d = document, s = d.createElement('script');
+                    s.src = 'https://webhacks-co-1.disqus.com/embed.js';
+                    s.setAttribute('data-timestamp', +new Date());
+                    (d.head || d.body).appendChild(s);
+                    })();
+                    </script>
+                    <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+                </section>
+            </div>
+        </div>
+    </article>
+</div>
