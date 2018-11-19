@@ -24,7 +24,12 @@
                     name: 'Hugo Roca',
                     alias: 'hugoroca'
                 })
-            })
+            });
+
+            io.on('connect users', (data) => {
+                console.log(`Actualizando desd el Servidor. Hay ${data.numbers} conexiones activas.`);
+                d.querySelector('#conexions').innerHTML = data.numbers;
+            });
         })(document, io);
     </script>
 </body>

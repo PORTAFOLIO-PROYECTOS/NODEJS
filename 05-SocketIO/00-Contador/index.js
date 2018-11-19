@@ -39,4 +39,18 @@ io.on('connection', (socket) => {
     });
 
     socket.on('Otro evento que me inventé', data => console.log(data));
+
+    conexions++;
+
+    console.log(`Conexiones activas: ${conexions}`);
+
+    socket.emit('connect users', { numbers: conexions})
+    //- para actualizar en todos
+    socket.broadcast.emit('connect users', {numbers: conexions});
+    //-
+    socket.on('disconnect', () => { 
+        conexions--;
+        console.log(`Conexiones activas: ${conexions}`);
+        socket.broadcast.emit('connect users', {numbers: conexions});
+    })
 });
