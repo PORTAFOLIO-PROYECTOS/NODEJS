@@ -4,11 +4,15 @@
   "description": "Contador de conexiones activas con Socket.IO",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "supervisor index.js"
   },
   "author": "Hugo Roca",
   "license": "MIT",
   "dependencies": {
     "socket.io": "^2.1.1"
+  },
+  "devDependencies": {
+    "supervisor": "^0.12.0"
   }
 }
