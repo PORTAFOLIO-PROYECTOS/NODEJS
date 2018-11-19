@@ -20,6 +20,10 @@
 
             io.on('hello', function(data){
                 d.querySelector('#hello').innerHTML = data.message;
+                io.emit('Otro evento que me inventé', {
+                    name: 'Hugo Roca',
+                    alias: 'hugoroca'
+                })
             })
         })(document, io);
     </script>

@@ -37,4 +37,6 @@ io.on('connection', (socket) => {
     socket.emit('hello', {
         message: 'Hola mundo con socket.IO'
     });
+
+    socket.on('Otro evento que me inventé', data => console.log(data));
 });
